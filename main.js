@@ -50,6 +50,11 @@ var mainState = {
         this.score = 0;
         this.labelScore = game.add.text(20, 20, "0", { font: "30px Arial", fill: "#ffffff" });
 
+        if(!localStorage.getItem('bestScore')){
+            localStorage.setItem('bestScore', 0)
+        }
+        this.bestScore = localStorage.getItem('bestScore');
+
         //gestion gameover
         this.gameIsRunning = false;
         // désactiver la gravité pour bird
@@ -109,31 +114,8 @@ var mainState = {
 
     // Display game over
     gameOver: function () {
-        console.log('game over')
-        this.gameIsRunning = false;
-      // Display the text
-      if (this.gameIsRunning == false){
-      let text = this.add.text (
-
-          this.game.width * 0.5, this.game.height * 0.5,
-          'Score: '+this.score+' \n\nGame over\n\n Press space to restart',
-        {
-          font: "30px Arial",
-          fill: "#f4427a",
-          align: 'center'
-        }
-    )
-    text.anchor.set(0.5)
-    this.bird.alpha = 0;
-    this.bird.body.allowGravity = false;
-    this.bird.kill()
-    this.pipes.alpha = 0;
-    stop(this.timer);
-    // Set spacebar as restart button
-    // If spacebar is clicked call 'restartGame'
-    //this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    this.spaceKey.onDown.add(this.restartGame, this)
-    }
+        game.state.start('gameover',true,false,this.score,this.bestScore)
+        
   },
 
     // Restart the game
@@ -178,9 +160,7 @@ var mainState = {
 }
 
 var introState = {
-    preload: function () {
-        
-    },
+    preload: function () {},
 
     create: function () {
         game.stage.backgroundColor = '#97fca4';
@@ -196,16 +176,52 @@ var introState = {
           }
         )
         this.textIntro.anchor.set(0.5)
+        game.add.tween(this.textIntro).from( { y: -200 }, 2000, Phaser.Easing.Bounce.Out, true);
     },
 
-    update: function () {
-
-    },
+    update: function () {},
 
     startGame: function () {
         game.state.start('main');
     }
 
+}
+
+var gameOverState = {
+    init: function(score, bestScore){
+        this.s = score;
+        this.b = bestScore
+	},
+    preload: function () {},
+
+    create: function (score) {
+        game.stage.backgroundColor = '#97fca4';
+        this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.spaceKey.onDown.add(this.startGame, this);
+        this.record = '';
+        if(this.b < this.s){
+            localStorage.setItem('bestScore', this.s)
+            this.record = 'New record !!!'
+        }
+        let text = this.add.text (
+
+            this.game.width * 0.5, this.game.height * 0.5,
+            `Score: ${this.s} Best score: ${this.b}\n ${this.record} \n\nGame over\n\n Press space to restart`,
+          {
+            font: "30px Arial",
+            fill: "#f4427a",
+            align: 'center'
+          }
+        )
+        game.add.tween(text).from( { y: -200 }, 2000, Phaser.Easing.Bounce.Out, true);
+        text.anchor.set(0.5)
+    },
+
+    update: function () {},
+
+    startGame: function () {
+        game.state.start('main');
+    }
 }
 // Initialize Phaser, and create a 400px by 490px game
 var game = new Phaser.Game(400, 490);
@@ -213,5 +229,6 @@ var game = new Phaser.Game(400, 490);
 // Add the 'mainState' and call it 'main'
 game.state.add('main', mainState);
 game.state.add('intro', introState)
+game.state.add('gameover', gameOverState)
 // Start the state to actually start the game
 game.state.start('intro');

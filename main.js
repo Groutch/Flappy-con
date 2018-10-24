@@ -41,8 +41,6 @@ var mainState = {
 
         //gestion gameover
         this.gameIsRunning = true;
-
-
     },
 
     update: function () {
@@ -103,13 +101,12 @@ var mainState = {
     // Set spacebar as restart button
     // If spacebar is clicked call 'restartGame'
     this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    this.spaceKey.onDown.add(this.restartGame, this)
-
-  },
+    this.spaceKey.onDown.add(this.restartGame, this);
+    },
 
     // Restart the game
     restartGame: function () {
-
+        this.gameIsRunning = true;
         // Start the 'main' state, which restarts the game
         game.state.start('main');
     },
@@ -148,11 +145,41 @@ var mainState = {
     },
 }
 
+var introState = {
+    preload: function () {
+        
+    },
+
+    create: function () {
+        game.stage.backgroundColor = '#97fca4';
+        this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+        this.spaceKey.onDown.add(this.startGame, this);
+        this.textIntro = this.add.text (
+            this.game.width * 0.5, this.game.height * 0.5,
+            'Welcome to Flappy Con\n\n Press space to start',
+          {
+            font: "30px Arial",
+            fill: "#f4427a",
+            align: 'center'
+          }
+        )
+        this.textIntro.anchor.set(0.5)
+    },
+
+    update: function () {
+
+    },
+
+    startGame: function () {
+        game.state.start('main');
+    }
+
+}
 // Initialize Phaser, and create a 400px by 490px game
 var game = new Phaser.Game(400, 490);
 
 // Add the 'mainState' and call it 'main'
 game.state.add('main', mainState);
-
+game.state.add('intro', introState)
 // Start the state to actually start the game
-game.state.start('main');
+game.state.start('intro');

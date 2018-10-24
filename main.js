@@ -17,10 +17,10 @@ var mainState = {
         game.physics.startSystem(Phaser.Physics.ARCADE);
         //creation du groupe des pipes
         this.pipes = game.add.group();
-
+        this.pipes.alpha = 1;
         // Display the bird at the position x=100 and y=245
         this.bird = game.add.sprite(100, 245, 'bird');
-
+        this.bird.alpha = 1;
         // Add physics to the bird
         // Needed for: movements, gravity, collisions, etc.
         game.physics.arcade.enable(this.bird);
@@ -39,6 +39,8 @@ var mainState = {
         this.score = 0;
         this.labelScore = game.add.text(20, 20, "0", { font: "30px Arial", fill: "#ffffff" });
 
+        //gestion gameover
+        this.gameIsRunning = true;
 
 
     },
@@ -83,11 +85,12 @@ var mainState = {
 
     // Display game over
     gameOver: function () {
-
+        this.gameIsRunning = false;
       // Display the text
       let text = this.add.text (
+          
           this.game.width * 0.5, this.game.height * 0.5,
-          'Game over\n\n Press space to restart',
+          'Score: '+this.score+' \n\nGame over\n\n Press space to restart',
         {
           font: "30px Arial",
           fill: "#f4427a",
@@ -95,7 +98,8 @@ var mainState = {
         }
     )
     text.anchor.set(0.5)
-
+    this.bird.alpha = 0;
+    this.pipes.alpha = 0;
     // Set spacebar as restart button
     // If spacebar is clicked call 'restartGame'
     this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
@@ -128,17 +132,19 @@ var mainState = {
         pipe.outOfBoundsKill = true;
     },
     addRowOfPipes: function() {
-        // Randomly pick a number between 1 and 5
-        // This will be the hole position
-        var hole = Math.floor(Math.random() * 5) + 1;
+        if(this.gameIsRunning){
+            // Randomly pick a number between 1 and 5
+            // This will be the hole position
+            var hole = Math.floor(Math.random() * 5) + 1;
 
-        // Add the 6 pipes
-        // With one big hole at position 'hole' and 'hole + 1'
-        for (var i = 0; i < 8; i++)
-            if (i != hole && i != hole + 1)
-                this.addOnePipe(400, i * 60 + 10);
-        this.score += 1;
-        this.labelScore.text = this.score;
+            // Add the 6 pipes
+            // With one big hole at position 'hole' and 'hole + 1'
+            for (var i = 0; i < 8; i++)
+                if (i != hole && i != hole + 1)
+                    this.addOnePipe(400, i * 60 + 10);
+            this.score += 1;
+            this.labelScore.text = this.score;
+        }
     },
 }
 

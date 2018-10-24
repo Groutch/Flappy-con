@@ -27,11 +27,22 @@ var mainState = {
 
         // Add gravity to the bird to make it fall
         this.bird.body.gravity.y = 1000;
+        // ajouter le text pour start
+        this.startText = this.add.text (
 
-        // Call the 'jump' function when the spacekey is hit
-        var spaceKey = game.input.keyboard.addKey(
+            this.game.width * 0.5, this.game.height * 0.5,
+            'Press space to start',
+            {
+                font: "30px Arial",
+                fill: "#f4427a",
+                align: 'center'
+            }
+        )
+        this.startText.anchor.set(0.5)
+        // Call the 'startGame' function when the spacekey is hit
+        this.spaceKey = game.input.keyboard.addKey(
             Phaser.Keyboard.SPACEBAR);
-        spaceKey.onDown.add(this.jump, this);
+        this.spaceKey.onDown.add(this.startGame, this);
         //pour afficher les colonnes de tuyaux toutes les secondes et demi
         this.timer = game.time.events.loop(1500, this.addRowOfPipes, this);
 
@@ -40,7 +51,10 @@ var mainState = {
         this.labelScore = game.add.text(20, 20, "0", { font: "30px Arial", fill: "#ffffff" });
 
         //gestion gameover
-        this.gameIsRunning = true;
+        this.gameIsRunning = false;
+        // désactiver la gravité pour bird
+        this.bird.body.allowGravity = false;
+
     },
 
     update: function () {
@@ -66,6 +80,18 @@ var mainState = {
         //on lorsque le sprite de bird colle au sprite d'une pipe : on restart
         game.physics.arcade.overlap(this.bird, this.pipes, this.gameOver, null, this);
     },
+    startGame: function(){
+        // activer la gravité pour bird
+        this.bird.body.allowGravity = true;
+        // start le game
+        this.gameIsRunning = true;
+        // DESTROY le text
+        this.startText.destroy();
+        // Add first jump
+        this.bird.body.velocity.y = -350;
+        // call 'jump' function
+        this.spaceKey.onDown.add(this.jump, this);
+    },
     // Make the bird jump
     jump: function () {
         // Add a vertical velocity to the bird
@@ -83,10 +109,12 @@ var mainState = {
 
     // Display game over
     gameOver: function () {
+        console.log('game over')
         this.gameIsRunning = false;
       // Display the text
+      if (this.gameIsRunning == false){
       let text = this.add.text (
-          
+
           this.game.width * 0.5, this.game.height * 0.5,
           'Score: '+this.score+' \n\nGame over\n\n Press space to restart',
         {
@@ -97,16 +125,20 @@ var mainState = {
     )
     text.anchor.set(0.5)
     this.bird.alpha = 0;
+    this.bird.body.allowGravity = false;
+    this.bird.kill()
     this.pipes.alpha = 0;
+    stop(this.timer);
     // Set spacebar as restart button
     // If spacebar is clicked call 'restartGame'
-    this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    this.spaceKey.onDown.add(this.restartGame, this);
-    },
+    //this.spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    this.spaceKey.onDown.add(this.restartGame, this)
+    }
+  },
 
     // Restart the game
     restartGame: function () {
-        this.gameIsRunning = true;
+
         // Start the 'main' state, which restarts the game
         game.state.start('main');
     },
